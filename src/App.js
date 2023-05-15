@@ -5,28 +5,27 @@ import theme from './theme';
 import Main from './components/Main';
 import React from 'react';
 import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Quiz from './components/Quiz';
+import HomePage from './components/Homepage';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
 
-import awsconfig from './aws-exports';
-import { Amplify } from 'aws-amplify';
-
-import { withAuthenticator } from '@aws-amplify/ui-react';
-import '@aws-amplify/ui-react/styles.css';
-
-import awsExports from './aws-exports';
-Amplify.configure(awsExports);
-
-function App({ signOut, user }) {
+function App() {
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <Router>
-          <Main />
-        </Router>
-      </ThemeProvider>
-      <h1>Hello {user.username}</h1>
-      <button onClick={signOut}>Sign out</button>
-    </>
+    <ThemeProvider theme={theme}>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/quiz" element={<Quiz />} />
+          // Add login component here
+        </Routes>
+      </div>
+    </Router>
+    </ThemeProvider>
   );
 }
 
-export default withAuthenticator(App);
+export default App;
+
