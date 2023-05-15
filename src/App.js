@@ -1,3 +1,8 @@
+import { BrowserRouter as Router } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
+
+import Main from './components/Main';
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -23,3 +28,4 @@ function App() {
 }
 
 export default App;
+
