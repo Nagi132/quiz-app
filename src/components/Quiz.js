@@ -3,7 +3,10 @@ import Question from './Question';
 import api from '../services/api';
 import { Container, Box, Typography, Button, Select, MenuItem } from '@mui/material';
 import theme from '../theme';
+import Results from './Results';
 import ReviewMode from './ReviewMode';
+import NavBar from './Navbar';
+import axios from 'axios';
 
 
 const Quiz = () => {
@@ -12,42 +15,53 @@ const Quiz = () => {
   const [answers, setAnswers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [submitted, setSubmitted] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [quizzes, setQuizzes] = useState([]);
+
+
+  // useEffect(() => {
+  //   async function getQuestions() {
+  //     try {
+  //       // Uncomment the following line and remove the mock data when your API is ready.
+  //       // const response = await api.get('/questions');
+  //       const response = {
+  //         data: [
+  //           {
+  //             question: 'What is the capital of France?',
+  //             options: ['Paris', 'London', 'Berlin', 'Madrid'],
+  //             correctAnswer: 0,
+  //             category: 'Module 1'
+  //           },
+  //           {
+  //             question: 'Which planet is closest to the Sun?',
+  //             options: ['Earth', 'Venus', 'Mercury', 'Mars'],
+  //             correctAnswer: 2,
+  //             category: 'Module 2'
+  //           }
+  //         ]
+  //       };
+  //       setQuestions(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching questions:', error);
+  //     }
+  //   }
+
+  //   getQuestions();
+  // }, []);
 
   useEffect(() => {
-    async function getQuestions() {
-      try {
-        // Uncomment the following line and remove the mock data when your API is ready.
-        // const response = await api.get('/questions');
-        const response = {
-          data: [
-            {
-              question: 'What is the capital of France?',
-              options: ['Paris', 'London', 'Berlin', 'Madrid'],
-              correctAnswer: 0,
-              category: 'Module 1'
-            },
-            {
-              question: 'Which planet is closest to the Sun?',
-              options: ['Earth', 'Venus', 'Mercury', 'Mars'],
-              correctAnswer: 2,
-              category: 'Module 2'
-            }
-          ]
-        };
-        setQuestions(response.data);
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-      }
-    }
+    axios.get('https://575gr24cmt6vxzvjjpplbjfate0omuor.lambda-url.us-east-1.on.aws/')
+        .then(response => setQuizzes(response.data))
+        .catch(error => console.error('Error:', error));
+}, []);
 
-    getQuestions();
-  }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (questionIndex) => (e) => {
     const updatedAnswers = [...answers];
-    updatedAnswers[currentQuestionIndex] = parseInt(e.target.value);
+    updatedAnswers[questionIndex] = parseInt(e.target.value);
     setAnswers(updatedAnswers);
   };
+ 
 
   const handleNext = () => {
     setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -58,6 +72,9 @@ const Quiz = () => {
   };
 
   const handleSubmit = () => {
+    if (reviewMode) {
+      setReviewMode(false);
+    }
     setSubmitted(true);
   };
 
@@ -69,29 +86,43 @@ const Quiz = () => {
     : null;
 
  
-      
+    const retryIncorrect = () => {
+      setReviewMode(true);
+      setSubmitted(false);
+
+    };
   
-  if (submitted) {
-    return (
-      <Container>
-        <Typography variant="h4" gutterBottom color="textPrimary">
-          Quiz Results
-        </Typography>
-        <Typography variant="body1" color="textPrimary">
-          You scored {score} out of {filteredQuestions.length} ({(score / filteredQuestions.length) * 100}%)
-        </Typography>
-            <ReviewMode filteredQuestions={filteredQuestions} answers={answers} />
-      </Container>
-    );
-  }
+    if (submitted && !reviewMode) {
+      return <Results
+        questions={filteredQuestions}
+        answers={answers}
+        setQuestions={setQuestions}
+        setAnswers={setAnswers}
+        retryIncorrect={retryIncorrect}
+      />;
+    }
+    
+    if (reviewMode) {
+      return (
+        <Container sx={{ bgcolor: theme.palette.background.default }}>
+          <ReviewMode
+            questions={filteredQuestions}
+            answers={answers}
+            setAnswers={setAnswers}
+            exitReviewMode={() => setReviewMode(false)}
+          />
+        </Container>
+      );
+    }
+    
 
   return (
     <Container sx={{ bgcolor: theme.palette.background.default }}>
-      {filteredQuestions.length > 0 && currentQuestion ? (
+      {filteredQuestions.length > 0 ? (
         <>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Typography variant="body1" gutterBottom color="textPrimary">
-              Filter by category:
+               Filter by category:
             </Typography>
             <Select
               id="category-filter"
@@ -105,30 +136,28 @@ const Quiz = () => {
               <MenuItem value="Module 4">Module 4</MenuItem>
             </Select>
           </Box>
+          
+          {filteredQuestions.map((question, index) => (
+            <Question
+              key={index}  
+              question={question.question}
+              options={question.options}
+              handleChange={handleChange(index)}  
+              currentAnswer={answers[index]}  
+              category={question.category}
+            />
+          ))}
 
-          <Question
-            question={currentQuestion.question}
-            options={currentQuestion.options}
-            handleChange={handleChange}
-            currentAnswer={answers[currentQuestionIndex]}
-            category={currentQuestion.category}
-          />
           <Box display="flex" justifyContent="center" alignItems="center" marginTop={2}>
-            <Button onClick={handlePrevious} disabled={currentQuestionIndex === 0} color="primary">
-              Previous
-            </Button>
-            {currentQuestionIndex === filteredQuestions.length - 1 ? (
-              <Button onClick={handleSubmit}>Submit</Button>
-            ) : (
-              <Button onClick={handleNext}>Next</Button>
-            )}
+            <Button onClick={handleSubmit}>Submit</Button>
           </Box>
         </>
       ) : (
-        <Typography variant="h4" gutterBottom>Loading...</Typography>
+        <Typography variant="h5" gutterBottom>Loading...</Typography>
       )}
     </Container>
-  );
+);
+
 };
 
 export default Quiz;

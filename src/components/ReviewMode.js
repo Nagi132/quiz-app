@@ -1,37 +1,29 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Typography, Box, Button } from '@mui/material';
+import Question from './Question';
 
-const ReviewMode = ({ filteredQuestions, answers, retryIncorrect }) => {
-  const sortedQuestions = filteredQuestions.sort((a, b) => {
-    const aIndex = filteredQuestions.indexOf(a);
-    const bIndex = filteredQuestions.indexOf(b);
-
-    const aIsCorrect = answers[aIndex] === a.correctAnswer;
-    const bIsCorrect = answers[bIndex] === b.correctAnswer;
-
-    return aIsCorrect - bIsCorrect;
-  });
+const ReviewMode = ({ questions, answers, setAnswers, exitReviewMode}) => {
+  const handleChange = (index) => (e) => {
+    const updatedAnswers = [...answers];
+    updatedAnswers[index] = parseInt(e.target.value);
+    setAnswers(updatedAnswers);
+  };
 
   return (
     <div>
-      {sortedQuestions.map((question, index) => {
-        const answerIndex = filteredQuestions.indexOf(question);
-        const isCorrect = answers[answerIndex] === question.correctAnswer;
-
-        return (
-          <div key={index}>
-            <Typography variant="h4" gutterBottom color="cyan">
-              {question.question}
-            </Typography>
-            <Typography variant="body1" color={isCorrect ? 'cyan' : 'error'}>
-              <strong>Your answer:</strong> {question.options[answers[answerIndex]]}
-            </Typography>
-            <Typography variant="body1" color="cyan">
-              <strong>Correct answer:</strong> {question.options[question.correctAnswer]}
-            </Typography>
-          </div>
-        );
-      })}
+      {questions.map((question, index) => (
+        <Box key={index} marginBottom={2}>
+          <Question
+            question={question.question}
+            options={question.options}
+            handleChange={handleChange(index)}
+            currentAnswer={answers[index]}
+            category={question.category}
+          />
+          <Button onClick={exitReviewMode} variant="contained" color="primary">Exit Review Mode</Button>
+        </Box>
+        
+      ))}
     </div>
   );
 };

@@ -1,19 +1,15 @@
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
+  typography: {
+    fontSize: 11
+  },
   palette: {
     primary: {
-      main: '#6200EE',
+      main: '#000000',
     },
     secondary: {
-      main: '#03DAC6',
-    },
-    background: {
-      default: '#121212',
-    },
-    text: {
-      primary: '#FFFFFF',
-      secondary: '#BB86FC',
+      main: '#FFFFFF',
     },
   },
 });
